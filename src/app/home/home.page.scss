@@ -1,27 +1,14 @@
-#container {
-  text-align: center;
-
+/* Pastikan mapId mengambil seluruh layar di bawah header */
+#mapId {
   position: absolute;
+  top: 56px; /* Tinggi dari ion-header, sesuaikan jika header lebih besar */
+  bottom: 0;
   left: 0;
   right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  height: calc(100% - 56px); /* Kurangi tinggi header dari tinggi penuh */
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
+/* Pastikan kontrol Leaflet seperti zoom in/out muncul di atas */
+.leaflet-control-container {
+  z-index: 1000; /* Pastikan kontrol berada di lapisan atas */
 }
