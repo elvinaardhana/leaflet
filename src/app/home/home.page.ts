@@ -198,8 +198,8 @@ export class HomePage {
         const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
         div.innerHTML = `
           <div style="background-color: white; padding: 10px; border-radius: 5px;">
-            <strong>Layer API</strong><br>
-            <small>Pilih layer API untuk ditampilkan:</small><br>
+            <strong>Informasi Titik Lokasi</strong><br>
+            <small>Pilih layer titik lokasi untuk ditampilkan:</small><br>
             ${apiData
               .map(
                 (api) => `
