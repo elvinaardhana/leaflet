@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import * as L from 'leaflet';
 import { HttpClient } from '@angular/common/http';
 
-// Atur jalur ikon marker untuk setiap layer
 const mitIcon = L.icon({
   iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@1.0/img/marker-icon-blue.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
@@ -24,11 +23,12 @@ const bencanaIcon = L.icon({
 const persilIcon = L.icon({
   iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@1.0/img/marker-icon-green.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+  iconSize: [10, 10],  // Adjust the size to make the marker appear as a small point
+  iconAnchor: [5, 5],   // Adjust anchor to center the marker
+  popupAnchor: [0, -10],
+  shadowSize: [0, 0]    // Remove shadow to make it a simpler point
 });
+
 
 @Component({
   selector: 'app-home',
@@ -42,13 +42,14 @@ export class HomePage {
   positronLayer!: L.TileLayer;
   geoJsonLayer!: L.GeoJSON;
   markerLayers: { [key: string]: L.LayerGroup } = {};
+  prefersDarkMode!: boolean;
 
   constructor(private http: HttpClient) {}
 
   ngOnInit() {}
 
   ionViewDidEnter() {
-    this.map = L.map('mapId').setView([-7.7829218,110.358321], 10);
+    this.map = L.map('mapId').setView([-7.7829218, 110.358321], 10);
 
     this.osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
@@ -69,6 +70,9 @@ export class HomePage {
     };
     L.control.layers(baseMaps).addTo(this.map);
 
+    // Deteksi mode gelap
+    this.prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
     this.loadGeoJSON();
     this.addAPILayerControls();
   }
@@ -77,28 +81,15 @@ export class HomePage {
     fetch('assets/data/adminkec.geojson')
       .then(response => response.json())
       .then(geojsonData => {
-        const colors = ['red', 'blue', 'green', 'orange', 'purple', 'yellow', 'magenta', 'pink', 'cyan', 'brown', 'teal', 'lime', 'lightblue', 'gray', 'maroon', 'gold', 'darkpurple'];        let colorIndex = 0;
-
-        this.geoJsonLayer = L.geoJSON(geojsonData, {
-          style: () => {
-            const fillColor = colors[colorIndex % colors.length];
-            colorIndex++;
-            return {
-              color: 'black',
-              weight: 2,
-              opacity: 0.8,
-              fillOpacity: 0.4,
-              fillColor: fillColor
-            };
-          },
-          onEachFeature: (feature, layer) => {
-            if (feature && feature.properties && feature.properties.name) {
-              layer.bindPopup(`<strong>${feature.properties.name}</strong>`);
-            }
-          }
+        L.geoJSON(geojsonData, {
+          style: () => ({
+            color: 'black', 
+            weight: 2, 
+            opacity: 0.8, 
+            fillOpacity: 0.4, 
+            fillColor: 'lightblue' 
+          })
         }).addTo(this.map);
-
-        this.map.fitBounds(this.geoJsonLayer.getBounds());
       })
       .catch(error => console.error('Error loading GeoJSON:', error));
   }
@@ -115,16 +106,11 @@ export class HomePage {
           const lng = parseFloat(item.Bujur);
 
           if (!isNaN(lat) && !isNaN(lng)) {
-            let icon = mitIcon; // Default icon
+            let icon = mitIcon;
 
-            // Pilih ikon berdasarkan nama layer
-            if (layerName === 'Kegiatan Mitigasi') {
-              icon = mitIcon;
-            } else if (layerName === 'Kejadian Bencana') {
-              icon = bencanaIcon;
-            } else if (layerName === 'Persil Bangunan') {
-              icon = persilIcon;
-            }
+            if (layerName === 'Kegiatan Mitigasi') icon = mitIcon;
+            else if (layerName === 'Kejadian Bencana') icon = bencanaIcon;
+            else if (layerName === 'Persil Bangunan') icon = persilIcon;
 
             const marker = L.marker([lat, lng], { icon });
             const popupContent = this.getPopupContent(layerName, item);
@@ -166,8 +152,7 @@ export class HomePage {
         `;
       case 'Persil Bangunan':
         return `
-          <strong>Jenis Bangunan:</strong> ${item['Jenis Bangunan']}<br>
-          <strong>Waktu:</strong> ${this.formatDate(item['Time'])}<br>
+          <strong>Persil Bangunan</strong> 
         `;
       default:
         return '<strong>Data tidak tersedia</strong>';
@@ -176,39 +161,24 @@ export class HomePage {
 
   addAPILayerControls() {
     const apiData = [
-      {
-        url: 'https://script.google.com/macros/s/AKfycbzU4aKbZ9HdHT6QqonzSZ08psfeRKyXE2I2Cwrl6D_ECDgzP8NpIIYcpk6v5ua0cFzy/exec',
-        name: 'Kegiatan Mitigasi'
-      },
-      {
-        url: 'https://script.google.com/macros/s/AKfycbx4LdIfEsJz_m1wfWDseVfr6XL2K2yi-AJlaOMuX_A6K64lQ4Y0c2ZRshApNc3IuYlSeg/exec',
-        name: 'Kejadian Bencana'
-      },
-      {
-        url: 'https://script.google.com/macros/s/AKfycbytDLiAGJBo1mKuAcsWRdM6uD7nkfrOtZ188vUyjbvphQ9ZxT38YqbJ1UqntArk-V0vIA/exec',
-        name: 'Persil Bangunan'
-      }
+      { url: 'https://script.google.com/macros/s/AKfycbzU4aKbZ9HdHT6QqonzSZ08psfeRKyXE2I2Cwrl6D_ECDgzP8NpIIYcpk6v5ua0cFzy/exec', name: 'Kegiatan Mitigasi' },
+      { url: 'https://script.google.com/macros/s/AKfycbx4LdIfEsJz_m1wfWDseVfr6XL2K2yi-AJlaOMuX_A6K64lQ4Y0c2ZRshApNc3IuYlSeg/exec', name: 'Kejadian Bencana' },
+      { url: 'https://script.google.com/macros/s/AKfycbytDLiAGJBo1mKuAcsWRdM6uD7nkfrOtZ188vUyjbvphQ9ZxT38YqbJ1UqntArk-V0vIA/exec', name: 'Persil Bangunan' }
     ];
 
     const CustomControl = L.Control.extend({
-      options: {
-        position: 'topright'
-      },
+      options: { position: 'topright' },
       onAdd: () => {
         const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
         div.innerHTML = `
-          <div style="background-color: white; padding: 10px; border-radius: 5px;">
+          <div style="background-color: white; color: black; padding: 10px; border-radius: 5px;">
             <strong>Informasi Titik Lokasi</strong><br>
             <small>Pilih layer titik lokasi untuk ditampilkan:</small><br>
-            ${apiData
-              .map(
-                (api) => `
+            ${apiData.map(api => `
               <label style="cursor: pointer; display: block; margin: 5px 0;">
                 <input type="checkbox" id="${api.name}" style="margin-right: 5px;" />
                 ${api.name}
-              </label>`
-              )
-              .join('')}
+              </label>`).join('')}
           </div>
         `;
         L.DomEvent.disableClickPropagation(div);
@@ -216,18 +186,20 @@ export class HomePage {
       }
     });
 
-    const groupControl = new CustomControl();
-    this.map.addControl(groupControl);
+
+    this.map.addControl(new CustomControl());
 
     apiData.forEach((api) => {
-      const checkboxElement = document.getElementById(api.name) as HTMLInputElement;
-      checkboxElement?.addEventListener('change', () => {
-        if (checkboxElement.checked) {
-          this.loadMarkersFromAPI(api.url, api.name);
-        } else if (this.markerLayers[api.name]) {
-          this.map.removeLayer(this.markerLayers[api.name]);
-        }
-      });
+      setTimeout(() => {
+        const checkboxElement = document.getElementById(api.name) as HTMLInputElement;
+        checkboxElement?.addEventListener('change', () => {
+          if (checkboxElement.checked) {
+            this.loadMarkersFromAPI(api.url, api.name);
+          } else if (this.markerLayers[api.name]) {
+            this.map.removeLayer(this.markerLayers[api.name]);
+          }
+        });
+      }, 500);
     });
   }
 }
