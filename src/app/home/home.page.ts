@@ -110,7 +110,7 @@ export class HomePage {
 
             if (layerName === 'Kegiatan Mitigasi') icon = mitIcon;
             else if (layerName === 'Kejadian Bencana') icon = bencanaIcon;
-            else if (layerName === 'Persil Bangunan') icon = persilIcon;
+            // else if (layerName === 'Persil Bangunan') icon = persilIcon;
 
             const marker = L.marker([lat, lng], { icon });
             const popupContent = this.getPopupContent(layerName, item);
@@ -163,7 +163,7 @@ export class HomePage {
     const apiData = [
       { url: 'https://script.google.com/macros/s/AKfycbzU4aKbZ9HdHT6QqonzSZ08psfeRKyXE2I2Cwrl6D_ECDgzP8NpIIYcpk6v5ua0cFzy/exec', name: 'Kegiatan Mitigasi' },
       { url: 'https://script.google.com/macros/s/AKfycbx4LdIfEsJz_m1wfWDseVfr6XL2K2yi-AJlaOMuX_A6K64lQ4Y0c2ZRshApNc3IuYlSeg/exec', name: 'Kejadian Bencana' },
-      { url: 'https://script.google.com/macros/s/AKfycbytDLiAGJBo1mKuAcsWRdM6uD7nkfrOtZ188vUyjbvphQ9ZxT38YqbJ1UqntArk-V0vIA/exec', name: 'Persil Bangunan' }
+      // { url: 'https://script.google.com/macros/s/AKfycbytDLiAGJBo1mKuAcsWRdM6uD7nkfrOtZ188vUyjbvphQ9ZxT38YqbJ1UqntArk-V0vIA/exec', name: 'Persil Bangunan' }
     ];
 
     const CustomControl = L.Control.extend({
